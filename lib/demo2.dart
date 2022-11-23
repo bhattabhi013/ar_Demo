@@ -171,7 +171,7 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
       var newNode = ARNode(
           type: NodeType.webGLB,
           uri:
-              "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
+              "https://github.com/KhronosGroup/glTF-Sample-Models/blob/master/2.0/BoomBox/glTF-Draco/BoomBox.gltf",
           scale: Vector3(0.2, 0.2, 0.2));
       bool? didAddWebNode = await this.arObjectManager!.addNode(newNode);
       this.webObjectNode = (didAddWebNode!) ? newNode : null;
