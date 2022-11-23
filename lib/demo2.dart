@@ -26,9 +26,9 @@ class LocalAndWebObjectsWidget extends StatefulWidget {
 class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
   ARSessionManager? arSessionManager;
   ARObjectManager? arObjectManager;
-  //String localObjectReference;
+  //late String localObjectReference;
   ARNode? localObjectNode;
-  //String webObjectReference;
+  //late String webObjectReference;
   ARNode? webObjectNode;
   ARNode? fileSystemNode;
   HttpClient? httpClient;
@@ -42,51 +42,36 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Local & Web Objects'),
-        ),
         body: Container(
             child: Stack(children: [
-          ARView(
-            onARViewCreated: onARViewCreated,
-            planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
-          ),
-          Align(
-              alignment: FractionalOffset.bottomCenter,
-              child:
-                  Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                        onPressed: onFileSystemObjectAtOriginButtonPressed,
-                        child: Text("Add/Remove Filesystem\nObject at Origin")),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                        onPressed: onLocalObjectAtOriginButtonPressed,
-                        child: Text("Add/Remove Local\nObject at Origin")),
-                    ElevatedButton(
-                        onPressed: onWebObjectAtOriginButtonPressed,
-                        child: Text("Add/Remove Web\nObject at Origin")),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                        onPressed: onLocalObjectShuffleButtonPressed,
-                        child: Text("Shuffle Local\nobject at Origin")),
-                    ElevatedButton(
-                        onPressed: onWebObjectShuffleButtonPressed,
-                        child: Text("Shuffle Web\nObject at Origin")),
-                  ],
-                )
-              ]))
-        ])));
+      ARView(
+        onARViewCreated: onARViewCreated,
+        planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
+      ),
+      Align(
+          alignment: FractionalOffset.bottomCenter,
+          child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                    onPressed: onFileSystemObjectAtOriginButtonPressed,
+                    child: Text("Add/Remove Filesystem\nObject at Origin")),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                    onPressed: onLocalObjectButtonPressed,
+                    child: Text("Add/Remove Local\nObject at Origin")),
+                ElevatedButton(
+                    onPressed: onWebObjectAtButtonPressed,
+                    child: Text("Add/Remove Web\nObject at Origin")),
+              ],
+            ),
+          ]))
+    ])));
   }
 
   void onARViewCreated(
@@ -99,22 +84,49 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
 
     this.arSessionManager!.onInitialize(
           showFeaturePoints: false,
-          showPlanes: true,
+          showPlanes: false,
           customPlaneTexturePath: "Images/triangle.png",
           showWorldOrigin: true,
-          handleTaps: false,
         );
     this.arObjectManager!.onInitialize();
 
     //Download model to file system
     httpClient = new HttpClient();
     _downloadFile(
-        "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb",
+        "https://github.com/bhattabhi013/swarabhaas_ui/raw/master/assets/images/text.glb",
         "LocalDuck.glb");
-    // Alternative to use type fileSystemAppFolderGLTF2:
-    //_downloadAndUnpack(
-    //    "https://drive.google.com/uc?export=download&id=1fng7yiK0DIR0uem7XkV2nlPSGH9PysUs",
-    //    "Chicken_01.zip");
+  }
+
+  Future<void> onLocalObjectButtonPressed() async {
+    if (this.localObjectNode != null) {
+      this.arObjectManager!.removeNode(this.localObjectNode!);
+      this.localObjectNode = null;
+    } else {
+      var newNode = ARNode(
+          type: NodeType.localGLTF2,
+          uri: "assets\star.glb",
+          scale: Vector3(0.2, 0.2, 0.2),
+          position: Vector3(0.0, 0.0, 0.0),
+          rotation: Vector4(1.0, 0.0, 0.0, 0.0));
+      bool? didAddLocalNode = await this.arObjectManager!.addNode(newNode);
+      this.localObjectNode = (didAddLocalNode!) ? newNode : null;
+    }
+  }
+
+  Future<void> onWebObjectAtButtonPressed() async {
+    if (this.webObjectNode != null) {
+      this.arObjectManager!.removeNode(this.webObjectNode!);
+      this.webObjectNode = null;
+    } else {
+      var newNode = ARNode(
+          type: NodeType.webGLB,
+          uri:
+              //"https://github.com/bhattabhi013/swarabhaas_ui/raw/master/assets/images/text.glb",
+              "https://github.com/bhattabhi013/ar_Demo/raw/master/assets/star.glb",
+          scale: Vector3(0.2, 0.2, 0.2));
+      bool? didAddWebNode = await this.arObjectManager!.addNode(newNode);
+      this.webObjectNode = (didAddWebNode!) ? newNode : null;
+    }
   }
 
   Future<File> _downloadFile(String url, String filename) async {
@@ -128,56 +140,6 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
     return file;
   }
 
-  Future<void> _downloadAndUnpack(String url, String filename) async {
-    var request = await httpClient!.getUrl(Uri.parse(url));
-    var response = await request.close();
-    var bytes = await consolidateHttpClientResponseBytes(response);
-    String dir = (await getApplicationDocumentsDirectory()).path;
-    File file = new File('$dir/$filename');
-    await file.writeAsBytes(bytes);
-    print("Downloading finished, path: " + '$dir/$filename');
-
-    // To print all files in the directory: print(Directory(dir).listSync());
-    try {
-      await ZipFile.extractToDirectory(
-          zipFile: File('$dir/$filename'), destinationDir: Directory(dir));
-      print("Unzipping successful");
-    } catch (e) {
-      print("Unzipping failed: " + e.toString());
-    }
-  }
-
-  Future<void> onLocalObjectAtOriginButtonPressed() async {
-    if (this.localObjectNode != null) {
-      this.arObjectManager!.removeNode(this.localObjectNode!);
-      this.localObjectNode = null;
-    } else {
-      var newNode = ARNode(
-          type: NodeType.localGLTF2,
-          uri: "Models/Chicken_01/Chicken_01.gltf",
-          scale: Vector3(0.2, 0.2, 0.2),
-          position: Vector3(0.0, 0.0, 0.0),
-          rotation: Vector4(1.0, 0.0, 0.0, 0.0));
-      bool? didAddLocalNode = await this.arObjectManager!.addNode(newNode);
-      this.localObjectNode = (didAddLocalNode!) ? newNode : null;
-    }
-  }
-
-  Future<void> onWebObjectAtOriginButtonPressed() async {
-    if (this.webObjectNode != null) {
-      this.arObjectManager!.removeNode(this.webObjectNode!);
-      this.webObjectNode = null;
-    } else {
-      var newNode = ARNode(
-          type: NodeType.webGLB,
-          uri:
-              "https://github.com/KhronosGroup/glTF-Sample-Models/blob/master/2.0/BoomBox/glTF-Draco/BoomBox.gltf",
-          scale: Vector3(0.2, 0.2, 0.2));
-      bool? didAddWebNode = await this.arObjectManager!.addNode(newNode);
-      this.webObjectNode = (didAddWebNode!) ? newNode : null;
-    }
-  }
-
   Future<void> onFileSystemObjectAtOriginButtonPressed() async {
     if (this.fileSystemNode != null) {
       this.arObjectManager!.removeNode(this.fileSystemNode!);
@@ -187,57 +149,8 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
           type: NodeType.fileSystemAppFolderGLB,
           uri: "LocalDuck.glb",
           scale: Vector3(0.2, 0.2, 0.2));
-      //Alternative to use type fileSystemAppFolderGLTF2:
-      //var newNode = ARNode(
-      //    type: NodeType.fileSystemAppFolderGLTF2,
-      //    uri: "Chicken_01.gltf",
-      //    scale: Vector3(0.2, 0.2, 0.2));
       bool? didAddFileSystemNode = await this.arObjectManager!.addNode(newNode);
       this.fileSystemNode = (didAddFileSystemNode!) ? newNode : null;
-    }
-  }
-
-  Future<void> onLocalObjectShuffleButtonPressed() async {
-    if (this.localObjectNode != null) {
-      var newScale = Random().nextDouble() / 3;
-      var newTranslationAxis = Random().nextInt(3);
-      var newTranslationAmount = Random().nextDouble() / 3;
-      var newTranslation = Vector3(0, 0, 0);
-      newTranslation[newTranslationAxis] = newTranslationAmount;
-      var newRotationAxisIndex = Random().nextInt(3);
-      var newRotationAmount = Random().nextDouble();
-      var newRotationAxis = Vector3(0, 0, 0);
-      newRotationAxis[newRotationAxisIndex] = 1.0;
-
-      final newTransform = Matrix4.identity();
-
-      newTransform.setTranslation(newTranslation);
-      newTransform.rotate(newRotationAxis, newRotationAmount);
-      newTransform.scale(newScale);
-
-      this.localObjectNode!.transform = newTransform;
-    }
-  }
-
-  Future<void> onWebObjectShuffleButtonPressed() async {
-    if (this.webObjectNode != null) {
-      var newScale = Random().nextDouble() / 3;
-      var newTranslationAxis = Random().nextInt(3);
-      var newTranslationAmount = Random().nextDouble() / 3;
-      var newTranslation = Vector3(0, 0, 0);
-      newTranslation[newTranslationAxis] = newTranslationAmount;
-      var newRotationAxisIndex = Random().nextInt(3);
-      var newRotationAmount = Random().nextDouble();
-      var newRotationAxis = Vector3(0, 0, 0);
-      newRotationAxis[newRotationAxisIndex] = 1.0;
-
-      final newTransform = Matrix4.identity();
-
-      newTransform.setTranslation(newTranslation);
-      newTransform.rotate(newRotationAxis, newRotationAmount);
-      newTransform.scale(newScale);
-
-      this.webObjectNode!.transform = newTransform;
     }
   }
 }
