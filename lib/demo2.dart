@@ -85,7 +85,7 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
     this.arSessionManager!.onInitialize(
           showFeaturePoints: false,
           showPlanes: false,
-          customPlaneTexturePath: "Images/triangle.png",
+          customPlaneTexturePath: "Assets/triangle.png",
           showWorldOrigin: true,
         );
     this.arObjectManager!.onInitialize();
@@ -104,7 +104,7 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
     } else {
       var newNode = ARNode(
           type: NodeType.localGLTF2,
-          uri: "assets\star.glb",
+          uri: "assets/Chicken_01/Chicken_01.gltf",
           scale: Vector3(0.2, 0.2, 0.2),
           position: Vector3(0.0, 0.0, 0.0),
           rotation: Vector4(1.0, 0.0, 0.0, 0.0));
@@ -146,7 +146,7 @@ class _LocalAndWebObjectsWidgetState extends State<LocalAndWebObjectsWidget> {
       this.fileSystemNode = null;
     } else {
       var newNode = ARNode(
-          type: NodeType.fileSystemAppFolderGLB,
+          type: NodeType.webGLB,
           uri: "LocalDuck.glb",
           scale: Vector3(0.2, 0.2, 0.2));
       bool? didAddFileSystemNode = await this.arObjectManager!.addNode(newNode);

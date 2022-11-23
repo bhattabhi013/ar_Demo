@@ -1,3 +1,4 @@
+import 'package:demo/dem6.dart';
 import 'package:demo/demo1.dart';
 import 'package:demo/demo2.dart';
 import 'package:demo/demo3.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: LocalAndWebObjectsWidget(),
+      home: LocalAndWebObjectsView(),
     );
   }
 }
