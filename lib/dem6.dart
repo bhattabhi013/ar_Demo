@@ -98,7 +98,7 @@ class _LocalAndWebObjectsViewState extends State<LocalAndWebObjectsView> {
       localObjectNode = null;
     } else {
       var newNode = ARNode(
-          type: NodeType.localGLTF2,
+          type: NodeType.fileSystemAppFolderGLTF2,
           uri: "assets/Chicken_01/Chicken_01.gltf",
           scale: Vector3(0.2, 0.2, 0.2),
           position: Vector3(0.0, 0.0, 0.0),
@@ -117,7 +117,7 @@ class _LocalAndWebObjectsViewState extends State<LocalAndWebObjectsView> {
           type: NodeType.webGLB,
           uri:
               //   "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/RiggedFigure/glTF-Binary/RiggedFigure.glb",
-              "https://github.com/bhattabhi013/ar_Demo/raw/master/assets/twinkle_twinkle.glb",
+              "https://github.com/bhattabhi013/ar_Demo/raw/master/assets/twink_twink.glb",
           //"https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/BrainStem/glTF-Binary/BrainStem.glb",
           scale: Vector3(0.2, 0.2, 0.2));
       bool? didAddWebNode = await arObjectManager.addNode(newNode);
